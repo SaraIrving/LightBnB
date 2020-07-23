@@ -32,7 +32,13 @@ exports.getUserWithEmail = getUserWithEmail;
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithId = function(id) {
-  return Promise.resolve(users[id]);
+  return pool.query(
+    `SELECT *
+    FROM students
+    WHERE id LIKE $1`, [id])
+    .then (res => res.rows)
+    .catch (err => null);
+  //return Promise.resolve(users[id]);
 }
 exports.getUserWithId = getUserWithId;
 
