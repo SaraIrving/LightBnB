@@ -4,6 +4,7 @@ const pool = new Pool({
   password: '123',
   host: 'localhost',
   database: 'lightbnb'
+  
 });
 
 const properties = require('./json/properties.json');
@@ -19,9 +20,9 @@ const users = require('./json/users.json');
 const getUserWithEmail = function(email) {
   return pool.query(
     `SELECT *
-    FROM students
-    WHERE email LIKE $1`, [email])
-    .then (res => res.rows)
+    FROM users
+    WHERE email = $1`, [email])
+    .then (res => res.rows[0])
     .catch (err => null);
 }
 exports.getUserWithEmail = getUserWithEmail;
@@ -32,13 +33,13 @@ exports.getUserWithEmail = getUserWithEmail;
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithId = function(id) {
+  console.log('id =', id);
   return pool.query(
     `SELECT *
-    FROM students
-    WHERE id LIKE $1`, [id])
-    .then (res => res.rows)
+    FROM users
+    WHERE id = $1`, [id])
+    .then (res => res.rows[0])
     .catch (err => null);
-  //return Promise.resolve(users[id]);
 }
 exports.getUserWithId = getUserWithId;
 
@@ -49,10 +50,13 @@ exports.getUserWithId = getUserWithId;
  * @return {Promise<{}>} A promise to the user.
  */
 const addUser =  function(user) {
-  const userId = Object.keys(users).length + 1;
-  user.id = userId;
-  users[userId] = user;
-  return Promise.resolve(user);
+  console.log(user);
+  return pool.query(
+    `INSERT INTO users (name, email, password)
+    VALUES ($1, $2, $3)
+    RETURNING*`, [user.name, user.email, user.password]
+  )
+  .then(res => res.rows[0]);
 }
 exports.addUser = addUser;
 
