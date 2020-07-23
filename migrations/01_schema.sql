@@ -27,7 +27,7 @@ CREATE TABLE properties (id SERIAL PRIMARY KEY NOT NULL,
                           city VARCHAR(255) NOT NULL,
                           province VARCHAR(255) NOT NULL,
                           post_code VARCHAR(255) NOT NULL,
-                          active BOOLEAN);
+                          active BOOLEAN DEFAULT true);
 
 CREATE TABLE reservations (id SERIAL PRIMARY KEY NOT NULL,
                             start_date DATE NOT NULL,
