@@ -88,15 +88,9 @@ exports.getAllReservations = getAllReservations;
  * @return {Promise<[{}]>}  A promise to the properties.
  */
 const getAllProperties = function(options, limit = 10) {
-  // return pool.query(`
-  // SELECT * 
-  // FROM properties
-  // LIMIT $1`, [limit])
-  // .then(res => res.rows);
-  console.log('options = ', options);
-
    // 1
    const queryParams = [];
+
    // 2
    let queryString = `
    SELECT properties.*, avg(property_reviews.rating) as average_rating
@@ -106,33 +100,12 @@ const getAllProperties = function(options, limit = 10) {
  
    // 3
 
-  //  if (options.city) {
-  //    if (options.minimum_price_per_night && options.maximum_price_per_night) {
-  //     queryParams.push(`%${options.city}%`);
-  //     queryString += `WHERE city LIKE $${queryParams.length}`;
-  //     const minCostInCents = options.minimum_price_per_night * 100
-  //     queryParams.push(`${minCostInCents}`);
-  //     queryString += ` AND cost_per_night >= $${queryParams.length}`;
-  //     const maxCostInCents = options.maximum_price_per_night * 100
-  //     queryParams.push(`${maxCostInCents}`);
-  //     queryString += ` AND cost_per_night <= $${queryParams.length}`;
-  //    } else if(options.minimum_price_per_night) {
-  //     queryParams.push(`%${options.city}%`);
-  //     queryString += `WHERE city LIKE $${queryParams.length}`;
-  //     const minCostInCents = options.minimum_price_per_night * 100
-  //     queryParams.push(`${minCostInCents}`);
-  //     queryString += ` AND cost_per_night >= $${queryParams.length}`;
-  //    } else if (options.maximum_price_per_night) {
-  //     queryParams.push(`%${options.city}%`);
-  //     queryString += `WHERE city LIKE $${queryParams.length}`;
-  //     const maxCostInCents = options.maximum_price_per_night * 100
-  //     queryParams.push(`${maxCostInCents}`);
-  //     queryString += ` AND cost_per_night <= $${queryParams.length}`;
-  //    } else {
-  //     queryParams.push(`%${options.city}%`);
-  //     queryString += `WHERE city LIKE $${queryParams.length} `;
-  //    }
-  //  }
+  //Check if you have city, minimum or maximum price properties
+  //If you do then push them to the query params array and also push the string 
+  // that would come after the WHERE clause to the whereOptions 
+  // array which will be formatted into a WHERE statement later 
+  // by the makeWhereClause function
+
   let whereOptions = [];
 
   if(options.city) {
@@ -152,6 +125,7 @@ const getAllProperties = function(options, limit = 10) {
     whereOptions.push(`cost_per_night <= $${queryParams.length}`);
   }
  
+  //this function will make a Where statement if we need one
   const makeWhereClause = function (whereOptions) {
     let whereClause = `WHERE `;
     if(whereOptions.length > 0) {
@@ -168,20 +142,16 @@ const getAllProperties = function(options, limit = 10) {
     }
   }
 
-  console.log('whereOptions = ', whereOptions);
-  console.log('function with whereOptions = ', makeWhereClause(whereOptions));
-
   if(makeWhereClause(whereOptions)) {
     queryString += makeWhereClause(whereOptions);
   }
-  console.log('queryString after makeWhereClause function', queryString);
-
-
+  
    // 4
 
   queryString += `
   GROUP BY properties.id`;
 
+  //if you have a minimum rating property, add it into a HAVING clause between your GROUP BY and your ORDER BY
   if(options.minimum_rating) {
   queryParams.push(`${options.minimum_rating}`);
   queryString +=`
@@ -194,8 +164,6 @@ const getAllProperties = function(options, limit = 10) {
   LIMIT $${queryParams.length};
   `;
 
-  
- 
    // 5
    console.log('query string and then queryParams = ', queryString, queryParams);
  
